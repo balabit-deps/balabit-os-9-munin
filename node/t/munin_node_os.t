@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 28;
+use Test::More tests => 26;
 use Test::LongString;
 use Config;  # for signal numbers and names
 
@@ -128,16 +128,6 @@ my $os = 'Munin::Node::OS';
 {
 	ok(  $os->possible_to_signal_process($$),     'can send a signal to ourselves');
 	ok(! $os->possible_to_signal_process(999999), 'cannot signal non-existant process');
-}
-
-SKIP: {
-	skip "Test assumes that the user is not root", 1 if $REAL_USER_ID == 0;
-	ok(! $os->possible_to_signal_process(1), 'cannot signal to init');
-}
-
-SKIP: {
-	skip "Test assumes that the user is root", 1 if $REAL_USER_ID != 0;
-	ok($os->possible_to_signal_process(1), 'can signal to init');
 }
 
 ### set_effective_user_id
