@@ -1,0 +1,54 @@
+Description: Edit munin-node-configure documentation to match correct arguments
+Author: Lena Voytek <lena.voytek@canonical.com>
+Origin: upstream, https://github.com/munin-monitoring/munin/commit/5ee7fbda4a92efdcb0278aefa20befc4847c02d8
+Bug: https://github.com/munin-monitoring/munin/issues/1341
+Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/munin/+bug/1680975
+Last-Update: 2021-11-16
+---
+This patch combines the upstream patch referenced above, which removes the exitnoerror info, with
+a custom patch that modifies the snmp argument names.
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/node/sbin/munin-node-configure
++++ b/node/sbin/munin-node-configure
+@@ -501,10 +501,6 @@
+ 
+ Override plugin library [@@LIBDIR@@/plugins/]
+ 
+-=item B<< --exitnoterror >>
+-
+-Do not consider plugins that exit non-zero exit-value as error.
+-
+ =item B<< --suggest >>
+ 
+ Suggest plugins that might be added or removed, instead of those that are
+@@ -616,17 +612,17 @@
+ 
+ Username.  There is no default.
+ 
+-=item B<< --snmpauthpassword <password> >>
++=item B<< --snmpauthpass <password> >>
+ 
+ Authentication password.  Optional when encryption is also enabled, in which
+-case defaults to the privacy password (C<--snmpprivpassword>).
++case defaults to the privacy password (C<--snmpprivpass>).
+ 
+-=item B<< --snmpauthprotocol <protocol> >>
++=item B<< --snmpauthproto <protocol> >>
+ 
+ Authentication protocol.  One of 'md5' or 'sha' (HMAC-MD5-96, RFC1321 and
+ SHA-1/HMAC-SHA-96, NIST FIPS PIB 180, RFC2264).  ['md5']
+ 
+-=item B<< --snmpprivpassword <password> >>
++=item B<< --snmpprivpass <password> >>
+ 
+ Privacy password to enable encryption.  There is no default.  An empty ('')
+ password is considered as no password and will not enable encryption.
+@@ -635,7 +631,7 @@
+ but all of these are defaulted (to 'des', 'md5', and the privpassword value,
+ respectively) and may therefore be left unspecified.
+ 
+-=item B<< --snmpprivprotocol <protocol> >>
++=item B<< --snmpprivproto <protocol> >>
+ 
+ If the privpassword is set this setting controls what kind of encryption is
+ used to achieve privacy in the session.  Only the very weak 'des' encryption

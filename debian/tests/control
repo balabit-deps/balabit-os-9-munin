@@ -1,0 +1,59 @@
+# Tests for master components:
+#   * collect graphs
+#   * generate html and png files
+#
+# Dependencies:
+#   * apache2: handle HTTP requests
+#   * cron (only sysV init): manually enforce a dependency conflict when switching to sysvinit-core
+#   * curl: HTTP requests for munin-httpd
+#   * daemontools: for "setuidgid"
+#   * file: determine mime type of HTTP responses
+#   * libcgi-fast-perl: required for delivery via apache2
+#   * munin-node: provide data to be retrieved by the munin master
+#   * munin-plugins-core: required for requesting plugin graphs via munin-httpd
+#   * netcat-openbsd: test local tcp connection
+#   * psmisc: "killall" for cleanup before master tests
+#   * sharness: test framework
+#
+# Additional specified "restrictions" for SysV init tests:
+#   * allow-stderr: apache2 emits the warning message
+#     "Could not reliably determine the server's fully qualified domain name".  It is harmless.
+#     The message is only emitted with SysV init. With systemd a slightly different name resolution
+#     seems to be in effect.  Thus we can ignore this output on stderr.
+#   * skip-not-installable: some distributions (e.g. Ubuntu) do not ship sysvinit-core.  They
+#     should be allowed to skip these tests.
+
+
+# systemd
+Tests: master-cron-systemd, master-cgi-systemd
+Depends: munin, munin-node, daemontools, apache2, curl, file, libcgi-fast-perl, psmisc, sharness, systemd-sysv
+Restrictions: needs-root, breaks-testbed, isolation-container
+
+# sysvinit-core
+#Tests: master-cron-sysv, master-cgi-sysv
+#Depends: munin, munin-node, daemontools, apache2, curl, file, libcgi-fast-perl, psmisc, sharness, sysvinit-core, #cron
+#Restrictions: needs-root, breaks-testbed, isolation-container, needs-reboot, allow-stderr, skip-not-installable
+
+
+# Tests for munin-node:
+#   * run the node
+#   * access plugins
+#
+# Dependencies:
+#   * netcat-openbsd: test local tcp connection
+#   * sharness: test framework
+
+# systemd
+Tests: node-systemd
+Depends: munin-node, netcat-openbsd, sharness, net-tools, systemd-sysv
+Restrictions: needs-root, breaks-testbed, isolation-container
+
+# sysvinit-core
+#Tests: node-sysv
+#Depends: munin-node, netcat-openbsd, sharness, net-tools, sysvinit-core, cron
+#Restrictions: needs-root, breaks-testbed, isolation-container, needs-reboot, allow-stderr, skip-not-installable
+
+# verify that all binary packages can be installed at the same time (without conflicts)
+Test-Command: true
+Depends: @
+Restrictions: breaks-testbed

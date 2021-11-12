@@ -1,0 +1,36 @@
+#!/usr/bin/env /lib/init/init-d-script
+
+### BEGIN INIT INFO
+# Provides:          munin-async
+# Required-Start:    $network $named $local_fs $remote_fs munin-node
+# Required-Stop:     $network $named $local_fs $remote_fs munin-node
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Munin asynchronous server
+# Description:       Munin asynchronous server spooling data from munin-node locally
+### END INIT INFO
+
+DESC="Munin asynchronous server"
+DAEMON=/usr/share/munin/munin-asyncd
+PIDFILE=/run/munin/munin-asyncd.pid
+DAEMON_USER="munin-async"
+DAEMON_ARGS=""
+START_ARGS="--chuid $DAEMON_USER --make-pidfile --pidfile $PIDFILE --background --notify-await --notify-timeout 15"
+STOP_ARGS="--user $DAEMON_USER"
+
+
+# use "--signal 1" for reload
+alias do_reload=do_reload_sigusr1
+
+
+# start-stop-daemon's "--exec" match does not work for scripts (with an interpreter).  Thus we
+# override the DAEMON path with the interpreter during "stop".
+# Due to this broad "--exec" match (possibly hitting any existing perl script), we need to prevent
+# the second "--stop" call of "start-stop-daemon" specified in the original "do_stop_cmd" function.
+# The original "do_stop_cmd" uses start-stop-daemon's "--name" match.  This does not work for
+# munin-asyncd, since it changes its name dynamically based on its current state or operation.
+# Thus we omit the "--name" match and rely only on the PID file.
+do_stop_cmd_override() {
+    start-stop-daemon --stop --quiet --oknodo --retry=TERM/30/KILL/5 \
+        --pidfile "$PIDFILE" --exec /usr/bin/perl
+}

@@ -1,0 +1,72 @@
+#! /bin/sh
+
+set -e
+
+if [ -e /usr/share/debconf/confmodule ]; then
+	. /usr/share/debconf/confmodule
+fi
+
+
+# workaround for bug #198522
+delete_dir_if_empty() {
+	if [ -d "$1" ]; then
+		# the removal may fail in case of a mountpoint or a symlink
+		rmdir --ignore-fail-on-non-empty "$1" || true
+	fi
+}
+
+
+if [ "$1" = "purge" ]; then
+
+	removed_rrd_files="no"
+	if [ -d /var/lib/munin ] && [ -e /usr/share/debconf/confmodule ]; then
+		db_input high munin/postrm_remove_rrd_files || true
+		db_go || true
+		db_get munin/postrm_remove_rrd_files || true
+		if [ "$RET" = "true" ]; then
+			find /var/lib/munin -mindepth 2 -type f -name "*.rrd" -delete
+			# remove directories of hosts and groups if all RRDs files within were removed
+			find /var/lib/munin -mindepth 1 -type d -not -name "lost+found" -empty -delete
+			removed_rrd_files="yes"
+		fi
+	fi
+	if [ "$removed_rrd_files" = "no" ]; then
+		echo "The generated web site or accumulated data won't be removed."
+	fi
+
+	rm -f /var/lib/munin/datafile
+	rm -f /var/lib/munin/limits
+	rm -f /var/lib/munin/*.stats
+	rm -f /var/lib/munin/*.storable
+	rm -f /var/lib/munin/*/*.ok
+
+	rm -f /var/log/munin/munin-update.log*
+	rm -f /var/log/munin/munin-graph.log*
+	rm -f /var/log/munin/munin-html.log*
+	rm -f /var/log/munin/munin-limits.log*
+	rm -f /var/log/munin/munin-cgi-graph.log*
+	rm -f /var/log/munin/munin-cgi-html.log*
+
+	delete_dir_if_empty /var/cache/munin/www
+	delete_dir_if_empty /var/lib/munin/cgi-tmp
+	delete_dir_if_empty /var/lib/munin
+	delete_dir_if_empty /var/log/munin
+	delete_dir_if_empty /etc/munin/templates
+	delete_dir_if_empty /etc/munin
+
+	webserver=apache2
+	# Disable configuration with Apache 2.4
+	if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+		. /usr/share/apache2/apache2-maintscript-helper 
+		apache2_invoke disconf munin.conf 
+	fi 
+	
+	# Remove configuration from Apache 2.4 conf dir
+	if [ -L /etc/$webserver/conf-available/munin.conf ]; then
+		# delete the link
+		rm -f /etc/$webserver/conf-available/munin.conf
+	fi
+fi
+
+
+#DEBHELPER#
