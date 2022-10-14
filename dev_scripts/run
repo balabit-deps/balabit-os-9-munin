@@ -1,0 +1,25 @@
+#!/bin/sh
+
+FINDBIN=$(cd -- "$(dirname "$0")" && pwd)
+. "$FINDBIN/common.sh"
+
+
+usage() {
+    echo "Usage: $0 <NAME>"
+    exit 1
+}
+
+
+if [ $# -eq 0 ]; then
+    usage
+fi
+
+
+RUN=$(find "$DESTDIR" -name "$1" -type f -executable)
+shift
+
+if [ -z "$RUN" ]; then
+    usage
+fi
+
+env "PERL5LIB=$PERLLIB" "$RUN" "$@"

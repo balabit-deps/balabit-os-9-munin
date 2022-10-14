@@ -1,0 +1,3 @@
+#!/bin/sh
+
+printf '%s\nquit' "$*" | nc localhost 4948

@@ -1,0 +1,70 @@
+dist: xenial
+language: minimal
+branches:
+ only:
+  - stable-2.0
+  - master
+  - travis-test
+addons:
+  apt:
+    packages:
+      - codespell
+      - devscripts
+      - libpango1.0-dev
+      - libfile-copy-recursive-perl
+      - libfile-slurp-perl
+      - libhtml-template-perl
+      - libio-socket-inet6-perl
+      - libio-stringy-perl
+      - liblist-moreutils-perl
+      - liblog-dispatch-perl
+      - liblog-log4perl-perl
+      - libmodule-build-perl
+      - libnet-server-perl
+      - libnet-snmp-perl
+      - libnet-ssleay-perl
+      - librrds-perl
+      - libtest-deep-perl
+      - libtest-differences-perl
+      - libtest-exception-perl
+      - libtest-longstring-perl
+      - libtest-mockmodule-perl
+      - libtest-mockobject-perl
+      - python3-flake8
+      - shellcheck
+      - dh-make-perl
+      - libdevel-cover-perl
+      - libhttp-tiny-perl
+      - libio-socket-ssl-perl
+      - libjson-pp-perl
+      - libyaml-perl
+      - libmodule-build-tiny-perl
+notifications:
+  email: false
+  irc:
+    on_success: change # no need for spam
+    on_failure: always
+    channels:
+      - "irc.oftc.net#munin"
+    template:
+      - "%{repository} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Build details: %{build_url}"
+matrix:
+  # we don't need to continue any build when 1 test is failing.
+  fast_finish: true
+
+env:
+  - TEST_MEDIUM=1
+
+before_install:
+  - ( cd /tmp && wget https://cpan.metacpan.org/authors/id/M/MI/MIKIHOSHI/Devel-Cover-Report-Coveralls-0.13.tar.gz )
+  - ( cd /tmp && tar zxvf Devel-Cover-Report-Coveralls-0.13.tar.gz )
+  - ( cd /tmp && dh-make-perl make --build Devel-Cover-Report-Coveralls-0.13 )
+  - ( cd /tmp && sudo dpkg -i libdevel-cover-report-coveralls-perl*.deb )
+  - ( cd /tmp && sudo apt-get install -yf )
+
+script:
+  - make
+  # the old travis environment requires an old flake8 invocation
+  - PYTHON_LINT_CALL="python3 -m flake8.main" make lint
+  - make test

@@ -1,0 +1,68 @@
+#!@@GOODSH@@
+# -*- sh -*-
+
+: << =cut
+
+=head1 NAME
+
+sendmail_mailqueue - Plugin to graph the sendmail queue size
+
+=head1 CONFIGURATION
+
+This plugin uses the following configuration variables
+
+ [sendmail_mailqueue]
+  env.mspqueue - MSQ queue directory
+  env.mtaqueue - MTA queue directory
+
+=head2 DEFAULT CONFIGURATION
+
+The default configuration is
+
+ [sendmail_mailqueue]
+  env.mspqueue /var/spool/mqueue-client
+  env.mtaqueue /var/spool/mqueue
+
+=head1 AUTHOR
+
+Unknown author
+
+=head1 LICENSE
+
+GPLv2
+
+=head1 MAGIC MARKERS
+
+ #%# family=auto
+ #%# capabilities=autoconf
+
+=cut
+
+MSP_QUEUE=${mspqueue:-/var/spool/mqueue-client}
+MTA_QUEUE=${mtaqueue:-/var/spool/mqueue}
+
+if [ "$1" = "autoconf" ]; then
+	if [ -d "$MSP_QUEUE" ] && [ -d "$MTA_QUEUE" ] ; then
+		echo yes
+		exit 0
+	else
+		echo "no (directories ${MSP_QUEUE} and ${MTA_QUEUE} not found)"
+		exit 0
+	fi
+fi
+
+if [ "$1" = "config" ]; then
+
+	echo 'graph_title Sendmail queued mails'
+	echo 'graph_order mails'
+	echo 'graph_vlabel mails in queue'
+	echo 'graph_category sendmail'
+	echo 'mails.label mails'
+	exit 0
+fi
+
+# Append /. to directory to force following symlinks at the start
+# point.
+mspmails=$(find "${MSP_QUEUE}/." -type f -name '[qQ]*' 2>/dev/null | grep -vF '.hoststat' | wc -l)
+mtamails=$(find "${MTA_QUEUE}/." -type f -name '[qQ]*' 2>/dev/null | grep -vF '.hoststat' | wc -l)
+echo "mails.value $((mspmails + mtamails))"
