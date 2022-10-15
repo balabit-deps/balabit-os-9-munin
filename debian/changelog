@@ -1,3 +1,9 @@
+munin (2.0.57-1ubuntu2bb1) jammy; urgency=medium
+
+  * Balabit patched version
+
+ -- Balabit Platform Team <devnull@dev.null>  Sat, 15 Oct 2022 12:57:25 +0200
+
 munin (2.0.57-1ubuntu2) jammy; urgency=medium
 
   * d/p/munin-node-configure-doc-fix.patch: Remove deprecated argument
