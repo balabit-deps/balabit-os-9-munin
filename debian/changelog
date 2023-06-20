@@ -1,3 +1,10 @@
+munin (2.0.57-1ubuntu2bb2) jammy; urgency=medium
+
+  * munin sysvinit: fix bash-incompatibility of init script
+    (thanks, Craig Sanders, Closes: #954234)
+
+ -- Balabit Platform Team <devnull@dev.null>  Tue, 20 Jun 2023 11:49:09 +0200
+
 munin (2.0.57-1ubuntu2bb1) jammy; urgency=medium
 
   * Balabit patched version
